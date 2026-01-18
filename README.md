@@ -11,10 +11,10 @@ Tools & Technologies
 - Data Format: CSV
 
 Repository Structure
-- HR_Analytics_Data.csv – Dataset used for analysis
-- HR_Analytics_Queries.sql – SQL queries for analysis
-- HR_Analytics_Dashboard.pbix – Power BI dashboard
-- Dashboard_Background.png – Dashboard background
+- hrdata.csv – Dataset used for analysis
+- Project_10_Queries.sql – SQL queries for analysis
+- HR Dshbrd.pbix – Power BI dashboard
+- Bg.avif – Dashboard background
 - README.docx – Project documentation
 
 Database Setup
