@@ -2,8 +2,7 @@ HR Analytics Project (SQL & Power BI)
 
 Project Overview
 This project demonstrates an end-to-end HR Analytics solution using PostgreSQL for data analysis and Power BI for data visualization. 
-The goal is to analyze employee data to understand attrition trends, workforce demographics, job satisfaction, and departmental performance, 
-helping organizations make informed HR decisions.
+The goal is to analyze employee data to understand attrition trends, workforce demographics, job satisfaction, and departmental performance, helping organizations make informed HR decisions.
 
 Tools & Technologies
 - Database: PostgreSQL (PgAdmin)
