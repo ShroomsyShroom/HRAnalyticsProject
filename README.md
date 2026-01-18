@@ -1,1 +1,334 @@
 # HRAnalyticsProject
+
+--HR Analytics Project--
+
+1. Create a New database in PgAdmin and name it "HR Analytics"(you can name it anything you want).
+
+2. Now in this new database create a table in it using the following query:
+
+Code:
+
+CREATE TABLE hrdata
+(
+	emp_no INT PRIMARY KEY,
+	gender VARCHAR(50) NOT NULL,
+	marital_status VARCHAR(50),
+	age_band VARCHAR(50),
+	age	INT,
+	department VARCHAR(50),
+	education VARCHAR(50),
+	education_field	VARCHAR(50),
+	job_role VARCHAR(50),
+	business_travel VARCHAR(50),
+	employee_count INT,
+	attrition VARCHAR(50),
+	attrition_label	VARCHAR(50),
+	job_satisfaction INT,
+	active_employee INT
+);
+
+3. Check the table you just created using the query tools.
+
+Code: 
+
+SELECT * FROM hrdata;
+
+4. Now import the data in this table from your excel or csv file.
+
+5. Now that the data has been imported we can perform some EDA operations on the data such as:
+
+I. Summation of number of employees for HR reports.
+
+a. Finding the sum of total number of employees.
+
+Code:
+
+SELECT SUM(employee_count) FROM hrdata;
+
+b. Finding the sum of total number of employees using important filters such as education of employees.
+
+Code:
+
+SELECT SUM(employee_count) FROM hrdata
+WHERE education LIKE '%High School%';
+
+c. Finding the total number of employees filtered by various departments.
+
+Code:
+
+SELECT SUM(employee_count) FROM hrdata
+WHERE department ILIKE '%Sales%';
+
+d. Finding the number of employees in a particular education field.
+
+Code:
+
+SELECT SUM(employee_count) FROM hrdata
+WHERE education_field ILIKE '%Medical%';
+
+II. Calculating total Attrition in the organisation.
+
+a. Calculating total attrition across the organization
+
+Code:
+
+SELECT COUNT(attrition) FROM hrdata AS Total_Attriton
+WHERE attrition ILIKE '%Yes%';
+
+b. Calculating total attrition by employees havaing doctoral degree in the organization.
+
+Code:
+
+SELECT COUNT(attrition) FROM hrdata AS Total_Attriton_of_Emp_with_Doctoral_Degree
+WHERE 
+	attrition ILIKE '%Yes%' 
+	AND 
+	education ILIKE '%Doctoral Degree%';
+
+--OR--
+
+SELECT 
+	COUNT(
+		CASE 
+			WHEN 
+				attrition ILIKE '%Yes%'
+				AND 
+				education ILIKE '%Doctoral Degree%'
+			THEN 1
+		END
+		) AS total_attrition_of_emp_with_doctoral_degree
+FROM hrdata;
+
+c. Calculating total attrition by employees in sales department holding a doctoral degree from medical department.
+
+Code:
+
+SELECT COUNT(attrition) FROM hrdata AS Attrition_in_Sales
+WHERE 
+	attrition ILIKE '%Yes%' 
+	AND 
+	department ILIKE '%Sales%'
+	AND
+	education_field ILIKE '%Medical%';
+
+
+d. Calculating total attrition by employees in sales department holding a doctoral degree from medical department having high school education.
+
+Code:
+
+SELECT COUNT(attrition) FROM hrdata AS Attrition_in_Sales
+WHERE 
+	attrition ILIKE '%Yes%' 
+	AND 
+	department ILIKE '%Sales%'
+	AND
+	education_field ILIKE '%Medical%'
+	AND
+	education ILIKE '%High School%';
+
+III. Calculating attrition rate in the organisation.
+
+a. Total attrition rate in the organisation 
+
+Code: 
+
+SELECT 
+	ROUND(((SELECT COUNT(attrition)
+	 FROM hrdata
+	 WHERE attrition ILIKE '%Yes%')::numeric/SUM(employee_count)*100),2) AS attrition_rate
+FROM hrdata;
+
+--OR by using CASE STATEMENTS--
+
+SELECT 
+	(SUM(CASE WHEN attrition ILIKE '%Yes%' THEN 1 ELSE 0 END)::NUMERIC
+	/
+	SUM(employee_count))*100 AS Attrition_rate
+FROM hrdata;
+
+--OR using CTEs--
+
+WITH attrition_rate_cte
+AS (
+	SELECT 
+		SUM(CASE WHEN attrition ILIKE '%Yes%' THEN 1 ELSE 0 END) AS attrition_yes,
+		SUM(employee_count) AS total_emp
+	FROM hrdata
+	)
+SELECT attrition_yes::NUMERIC/total_emp AS attrition_rate
+FROM attrition_rate_cte;
+
+b. Attrition rate in different departments.
+
+Code:
+
+SELECT 
+	ROUND(((SELECT COUNT(attrition)
+	 FROM hrdata
+	 WHERE attrition ILIKE '%Yes%' AND department ILIKE '%Sales%')::numeric/SUM(employee_count)*100),2) AS attrition_rate
+FROM hrdata
+WHERE department ILIKE '%sales%';
+
+IV. Finding out active employees in the organisation.
+
+a. Overall active employees in the organisation.
+
+Code:
+
+SELECT 
+	(SUM(employee_count) - (SELECT COUNT(*) FROM hrdata WHERE attrition ILIKE '%Yes%')) AS Active_employees
+FROM hrdata;
+
+b. Overall active male employees in the organisation
+
+Code:
+
+SELECT 
+	SUM(employee_count) - (SELECT COUNT(attrition) FROM hrdata WHERE attrition ILIKE '%Yes%' AND gender ILIKE 'Male') AS active_emp
+FROM hrdata
+WHERE gender ILIKE 'Male';
+
+V. Average age calculation
+
+Code:
+
+SELECT ROUND(AVG(age),0) AS Average_age
+FROM hrdata;
+
+VI. Attrition by Gender in the organisation.
+
+a. Attrition in organisation based on gender
+
+Code:
+
+SELECT 
+	gender, COUNT(attrition) AS Attrition_by_gender
+FROM hrdata
+WHERE attrition ILIKE '%Yes%'
+GROUP BY 1
+ORDER BY 2 DESC; 
+
+b. Attrition based on gender and education
+
+Code:
+
+SELECT 
+	gender, COUNT(attrition) AS Attrition_by_gender
+FROM hrdata
+WHERE 
+	attrition ILIKE '%Yes%'
+	AND
+	education ILIKE '%High School%'
+GROUP BY 1
+ORDER BY 2 DESC; 
+
+VII. Department wise Attrition 
+
+a. Attrition based on different departments in organisation.
+
+Code:
+
+SELECT 
+	department, COUNT(attrition) AS Attrition_by_gender
+FROM hrdata
+WHERE 
+	attrition ILIKE '%Yes%'
+GROUP BY 1
+ORDER BY 2 DESC; 
+
+b. Attrition rate based on different departments in organisation.
+
+Code:
+
+SELECT 
+	department, 
+	COUNT(attrition) AS Attrition_by_dept,
+	ROUND((COUNT(attrition)::NUMERIC/(SELECT COUNT(attrition) FROM hrdata WHERE attrition ILIKE '%Yes%')*100),2) AS Dept_attrition_rate
+FROM hrdata
+WHERE 
+	attrition ILIKE '%Yes%'
+GROUP BY 1
+ORDER BY 2 DESC; 
+
+c. Attrition rate based on different department and gender(for Female employees)
+
+Code:
+
+SELECT 
+	department, 
+	gender,
+	COUNT(attrition) AS Attrition_by_dept,
+	ROUND((COUNT(attrition)::NUMERIC/(SELECT COUNT(attrition) FROM hrdata WHERE attrition ILIKE '%Yes%' AND gender ILIKE 'FEMALE')*100),2) AS Dept_attrition_rate
+FROM hrdata
+WHERE 
+	attrition ILIKE '%Yes%' AND gender ILIKE 'FEMALE'
+GROUP BY 1,2
+ORDER BY 3 DESC; 
+
+VIII. Number of employees by age group
+
+Code:
+
+SELECT 
+	age_band,
+	SUM(employee_count)
+FROM hrdata
+GROUP BY 1
+ORDER BY 2;
+
+IX. Education field wise attrition
+
+Code:
+
+SELECT 
+	education_field,
+	COUNT(attrition) AS attrition_by_edu_field
+FROM hrdata
+WHERE attrition ILIKE 'YES'
+GROUP BY 1
+ORDER BY 2 DESC;
+
+X. Attrition by gender for different age groups
+
+a. Total attrition by gender for different age groups
+
+Code:
+
+SELECT 
+	age_band,
+	gender,
+	COUNT(attrition) AS attrition_by_gender_and_age
+FROM hrdata
+WHERE attrition ILIKE 'Yes'
+GROUP BY 1, 2
+ORDER BY 3 DESC;
+
+b. Attrition rate by gender for different age groups
+
+Code:
+
+SELECT 
+	age_band,
+	gender,
+	COUNT(attrition) AS attrition,
+	ROUND(
+		  (COUNT(attrition)::NUMERIC/(SELECT SUM(employee_count) FROM hrdata WHERE attrition ILIKE 'YES')::NUMERIC)*100 
+		  ,2) AS attrition_rate
+FROM hrdata
+WHERE attrition ILIKE 'Yes'
+GROUP BY 1, 2
+ORDER BY 3 DESC;
+
+XI. Job satisfaction rating matrix
+
+Code:
+
+SELECT 
+	job_role,
+	SUM(CASE WHEN job_satisfaction = 1 THEN employee_count ELSE 0 END) AS one,
+	SUM(CASE WHEN job_satisfaction = 2 THEN employee_count ELSE 0 END) AS two,
+	SUM(CASE WHEN job_satisfaction = 3 THEN employee_count ELSE 0 END) AS three,
+	SUM(CASE WHEN job_satisfaction = 4 THEN employee_count ELSE 0 END) AS four
+FROM hrdata
+GROUP BY 1
+ORDER BY 1;
