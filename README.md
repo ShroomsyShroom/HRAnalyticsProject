@@ -1,4 +1,4 @@
-HR Analytics Project (SQL & Power BI)
+<H1>HR Analytics Project (SQL & Power BI)</H1>
 
 Project Overview
 This project demonstrates an end-to-end HR Analytics solution using PostgreSQL for data analysis and Power BI for data visualization. 
